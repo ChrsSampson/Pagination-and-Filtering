@@ -11,47 +11,55 @@ For assistance:
    Reach out in your Slack community: https://treehouse-fsjs-102.slack.com/app_redirect?channel=unit-2
 */
 
+// Attach SearchBox to Page
+// create search box
+function createSearchBox(){
+   const header = document.querySelector(".header");
+   const searchBox =`
+      <label for="search" class="student-search"> 
+         <input id="search" placeholder="Search by name...">
+         <button type="button"><img src="img/icn-search.svg" alt="Search icon"></button>
+      </label>   
+      `;
+   // Attatch search box
+   header.insertAdjacentHTML("beforeend", searchBox);
+}
 
 
 /*
 Create the `showPage` function
 This function will create and insert/append the elements needed to display a "page" of nine students
 */
-function showPage(){
+function showPage(StudentArray, page){
    // selectors
-   // I think I am Supuse to use class slectors here but theres nothing that says I cant add ids to things. 
-   const studentList = document.getElementById("student-List");
-   const header = document.getElementById("header");
+   const listContainer = document.querySelector(".student-list");
+   
 
-   // create search box
-   const searchBox = document.createElement('label');
-   searchBox.classList.add("student-search");
-   searchBox.innerHTML = `
-      <input id="search" placeholder="Search by name...">
-      <button type="button"><img src="img/icn-search.svg" alt="Search icon"></button>
-   `;
-   // Attatch search box
-   header.appendChild(searchBox);
+   // Variables
+   let start = (page * 9) - 9;
+   let end = page * 9;
+   
+   // Clear Container
+   listContainer.innerHTML = ``;
 
    //Create Student Cards 
-   data.forEach((student) => {
-      let card = document.createElement('li');
+   StudentArray.forEach((student, index) => {
+      if(index >= start && index < end){     
 
-      card.classList.add('student-item');
-      card.classList.add('cf')
-      let currStudent = student;
-      card.innerHTML = `
-      <div class="student-details">
-            <img class="avatar" src=${currStudent.picture.large}>
-            <h3 id="studentName">${currStudent.name.title} ${currStudent.name.first} ${currStudent.name.last}</h3>
-            <span class="email">${currStudent.email}</span>
-          </div>
-          <div class="joined-details">
-            <span class="date">Joined ${currStudent.registered.date}</span>
-          </div>
-        </li>
-      `;
-      studentList.appendChild(card);
+         let card = `
+         <li class="student-item cf">
+            <div class="student-details">
+               <img class="avatar" src=${student.picture.large}>
+               <h3 id="studentName">${student.name.first} ${student.name.last}</h3>
+               <span class="email">${student.email}</span>
+            </div>
+            <div class="joined-details">
+               <span class="date">Joined ${student.registered.date}</span>
+            </div>
+         </li>
+         `;
+         listContainer.insertAdjacentHTML("beforeend", card);
+      }
    });
 }
 
@@ -60,39 +68,89 @@ function showPage(){
 Create the `addPagination` function
 This function will create and insert/append the elements needed for the pagination buttons
 */
-function addPagination(){
-   const pageBtnContainer = document.getElementsByClassName("link-list"); 
-   let pages = Math.ceil(data.length / 9)
-   pageBtnContainer.innerHTML = ``;
-   for(let i = 1; i <= pages; i++ ){
-      let button = document.createElement('li');
-      button.innerHTML = `<button type="button" class="active">${i}</button>`;
-      pageBtnContainer.insertAdjacentHTMl(button);
-   }
+const btnContainer = document.querySelector(".link-list");
 
+function addPagination(list){
+   
+   let pages = Math.ceil(list.length / 9)
+   btnContainer.innerHTML = ``;
+   for(let i = 1; i <= pages; i++ ){
+      let button=`
+      <li>
+         <button type="button">${i}</button>
+      </li>
+      `;
+      btnContainer.insertAdjacentHTML("beforeend", button);
+   }
+   btnContainer.querySelector('BUTTON').classList.add("active");
 }
+
+// Event Listener for Page picker
+btnContainer.addEventListener('click', (e) => {
+   if(e.target.tagName == 'BUTTON'){
+      document.querySelector(".active").className = "";
+      e.target.classList.add('active');
+      let pageNumber = e.target.textContent;
+      showPage(data, pageNumber);
+   }
+});
 
 
 // Call functions
 // Without these we are nothing
-showPage();
-addPagination();
+showPage(data, 1);
+addPagination(data);
+createSearchBox();
 
 
-
-// Search Function (This Shit Dont work)
+// Search Function 
 const searchBox = document.getElementById('search');
-const students = document.getElementsByClassName('student-item')
-searchBox.addEventListener('keyup', (e) =>{
-   console.log(e.target.value)
-   const searchTerm = e.target.value.toLowerCase();
-   for(let i = 0; i < students.length; i++){
-       const name = students[i].getAttribute('studentName');
-       if(name.toLowerCase().includes(searchTerm)) {
-           students[i].style.display = 'block';
-       }
-       else{
-           students[i].style.display = 'none';
-       }
+searchBox.addEventListener("keyup", (e) => {
+   // Clear Container
+   const listContainer = document.querySelector(".student-list");
+
+   listContainer.innerHTML = "";
+   // Load all Students into list
+   data.forEach((student) => {
+      
+         let card = `
+         <li class="student-item cf">
+            <div class="student-details">
+               <img class="avatar" src=${student.picture.large}>
+               <h3 id="studentName">${student.name.first} ${student.name.last}</h3>
+               <span class="email">${student.email}</span>
+            </div>
+            <div class="joined-details">
+               <span class="date">Joined ${student.registered.date}</span>
+            </div>
+         </li>
+         `;
+         listContainer.insertAdjacentHTML("beforeend", card);
+      
+   });
+
+   // Read the list and input
+   let studentItems = document.querySelectorAll(".student-item");
+   let students = Array.from(studentItems);
+   let searchTerm = searchBox.value.toLowerCase();
+   console.log(searchTerm, students);
+
+   // Show matching Items
+   students.forEach((student)=>{
+      if(student.innerHTML.includes(searchBox.value.toLowerCase())){
+         student.style.display = "flex"
+      }
+      else{
+         student.style.display = "none";
+      }
+
+   });
+
+   // reset page on search exit
+   if(searchTerm == ""){
+      showPage(data, 1);
    }
+
 });
+
+
