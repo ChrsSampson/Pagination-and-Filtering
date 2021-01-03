@@ -133,8 +133,7 @@ searchBox.addEventListener("keyup", (e) => {
    let studentItems = document.querySelectorAll(".student-item");
    let students = Array.from(studentItems);
    let searchTerm = searchBox.value.toLowerCase();
-   console.log(searchTerm, students);
-
+   
    // Show matching Items
    students.forEach((student)=>{
       if(student.innerHTML.includes(searchBox.value.toLowerCase())){
